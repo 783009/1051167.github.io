@@ -1,6 +1,6 @@
 # Setup
-title: Dark Poole
-url: https://getpoole.com
+title: Jace's Epic website
+url: 1051167.github.io
 paginate: 1
 baseurl: ""
 permalink: pretty
@@ -32,9 +32,9 @@ sass:
 
 # Specify the author for blog posts
 author:
-  name: Mark Otto
+  name: Jace Richard Berube
   url: https://twitter.com/mdo
-  email: markdotto@gmail.com
+  email: 1051167@pdsb.net
 
 # Custom vars
 version: 3.0.0
