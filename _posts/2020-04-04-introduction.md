@@ -7,6 +7,8 @@ One day, my tech teacher asked me to make a website. So, I thought for 14 second
 
 -----
 
+!(/Yippee.gif)
+
 Poole is the butler for [Jekyll](http://jekyllrb.com), the static site generator. It's designed and developed by [@mdo](https://twitter.com/mdo) to provide a clear and concise foundational setup for any Jekyll site. It does so by furnishing a full vanilla Jekyll install with example layouts, pages, posts, and styles.
 
 This demo site was last updated {{ site.time | date: "%B %d, %Y" }}.
