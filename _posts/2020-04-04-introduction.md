@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Introduction
+title: OMG EPIC POGGIES WEBSITE
 ---
 
-*The Strange Case of Dr. Jekyll and Mr. Hyde* tells the story of a lawyer investigating the connection of two persons, Dr. Henry Jekyll and Mr. Edward Hyde. Chief among the novel's supporting cast is a man by the name of Mr. Poole, Dr. Jekyll's loyal butler.
+One day, my tech teacher asked me to make a website. So, I thought for 14 seconds, watched a video, and made this. Yippee.
 
 -----
 
