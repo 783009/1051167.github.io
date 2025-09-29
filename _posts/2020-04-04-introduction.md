@@ -3,7 +3,7 @@ layout: post
 title: OMG EPIC POGGIES WEBSITE
 ---
 
-One day, my tech teacher asked me to make a website. So, I thought for 14 seconds, watched a video, and made this. Yippee.
+One day, my tech teacher asked me to make a website. Here it is. Yay
 
 -----
 
@@ -11,14 +11,14 @@ One day, my tech teacher asked me to make a website. So, I thought for 14 second
 
 This website will probably be used for different kinds of work, and may look different as time goes on. Currently, it's uh, kinda blank, but more stuff is going to be put in later.
 
-This demo site was last updated {{ site.time | date: "%B %d, %Y" }}.
+I am currently working on adding more content that is useful to this page, and currently it's in the most bare state. This will change.
 
-There are currently two themes built on Poole:
+WRITING
 
 * [Hyde](http://hyde.getpoole.com)
 * [Lanyon](http://lanyon.getpoole.com)
 
-Learn more and contribute on [GitHub]({{ site.github.repo }}).
+WRITING
 
 ## What's included
 
