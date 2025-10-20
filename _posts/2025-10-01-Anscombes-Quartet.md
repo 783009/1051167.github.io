@@ -2,175 +2,594 @@
 layout: post
 title: Anscombe's Quartet Analysis & Visualization
 ---
-# Anscombe’s Quartet Analysis
+# Exploratory Data Analysis on Anscombe's Quartet
+**Author:** Jace (GitHub: 1051167)  
+**Date:** 2025-10-07  
 
-In this notebook, we analyze Anscombe’s Quartet, a famous dataset consisting of four datasets with nearly identical summary statistics (mean, variance, correlation, and regression line), yet very different distributions. 
+You can veiw the Jupyter notebook file(.ipynb) [here](https://github.com/1051167/1051167.github.io/blob/main/assets/eda/Anscombe's%20Data%20Quartet%20Exploratory%20Data%20Analysis.ipynb)
 
-The goals of this analysis are to:
-- Calculate key summary statistics (mean, variance, correlation, regression slope/intercept, and R²) for each dataset.
-- Visualize all four datasets using scatter plots and regression lines.
-- Apply Tufte’s principles of good visualization to maximize clarity and minimize chartjunk.
-- Reflect on why visual inspection is crucial in addition to statistical summaries.
+You can veiw the pdf file [here](https://1051167.github.io/assets/eda/Anscombe's%20Data%20Quartet%20Exploratory%20Data%20Analysis.pdf)
+<iframe src="/assets/eda/Anscombe's Data Quartet Exploratory Data Analysis.pdf" width="100%" height="600px"></iframe>
+
+
+*This notebook performs a full exploratory data analysis (EDA) on Anscombe's Quartet, highlighting the importance of visual inspection alongside summary statistics.*
+
+## Abstract
+Anscombe's Quartet consists of four datasets with nearly identical summary statistics (means, variances, correlations, and regression lines) but dramatically different distributions when graphed. This notebook demonstrates how summary statistics alone can be misleading and highlights the role of visualization in exploratory data analysis (EDA). Multiple plots, including scatter plots, regression lines, residuals, boxplots, and violin plots are presented, alongside interactive visualizations using Plotly and Altair.
 
 
 
 ```python
-# ===== Anscombe's Quartet Analysis & Visualization =====
-
+# -------------------------------
+# 1️⃣ Imports
+# -------------------------------
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import stats
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# --- Create the dataset ---
-data = {
-    'x1': [10,8,13,9,11,14,6,4,12,7,5],
-    'y1': [8.04,6.95,7.58,8.81,8.33,9.96,7.24,4.26,10.84,4.82,5.68],
-    'y2': [9.14,8.14,8.74,8.77,9.26,8.10,6.13,3.10,9.13,7.26,4.74],
-    'y3': [7.46,6.77,12.74,7.11,7.81,8.84,6.08,5.39,8.15,6.42,5.73],
-    'x4': [8,8,8,8,8,8,8,19,8,8,8],
-    'y4': [6.58,5.76,7.71,8.84,8.47,7.04,5.25,12.5,5.56,7.91,6.89]
-}
+sns.set(style="whitegrid")
+plt.rcParams['figure.figsize'] = (8, 6)
 
-df = pd.DataFrame(data)
+# -------------------------------
+# 2️⃣ Load CSV (wide format)
+# -------------------------------
+df_wide = pd.read_csv("anscombe.csv")
 
-# --- Function to calculate summary statistics ---
-def summarize(x, y):
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-    return {
-        'mean_x': np.mean(x),
-        'mean_y': np.mean(y),
-        'var_x': np.var(x, ddof=1),
-        'var_y': np.var(y, ddof=1),
-        'correlation': np.corrcoef(x, y)[0,1],
-        'slope': slope,
-        'intercept': intercept,
-        'r_squared': r_value**2
+# Rename columns for consistency
+df_wide = df_wide.rename(columns={
+    'x123': 'x1',
+    'x4': 'x4',
+    'y1': 'y1', 'y2': 'y2', 'y3': 'y3', 'y4': 'y4'
+})
+
+print("Wide-format data:")
+display(df_wide.head())
+```
+
+    Wide-format data:
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
     }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>x1</th>
+      <th>y1</th>
+      <th>y2</th>
+      <th>y3</th>
+      <th>x4</th>
+      <th>y4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10.0</td>
+      <td>8.04</td>
+      <td>9.14</td>
+      <td>7.46</td>
+      <td>8.0</td>
+      <td>6.58</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>8.0</td>
+      <td>6.95</td>
+      <td>8.14</td>
+      <td>6.77</td>
+      <td>8.0</td>
+      <td>5.76</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>13.0</td>
+      <td>7.58</td>
+      <td>8.74</td>
+      <td>12.74</td>
+      <td>8.0</td>
+      <td>7.71</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>9.0</td>
+      <td>8.81</td>
+      <td>8.77</td>
+      <td>7.11</td>
+      <td>8.0</td>
+      <td>8.84</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>11.0</td>
+      <td>8.33</td>
+      <td>9.26</td>
+      <td>7.81</td>
+      <td>8.0</td>
+      <td>8.47</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+## Data
+The dataset is loaded from `anscombe.csv` and initially in a wide format, with separate columns for each dataset's X and Y values.  
+We convert it to a long format (`dataset`, `x`, `y`) to facilitate grouping and analysis.
+
+
+```python
+# -------------------------------
+# 3️⃣ Convert to long format
+# -------------------------------
+df_list = []
+for i in range(1,5):
+    x_col = 'x1' if i < 4 else 'x4'
+    y_col = f'y{i}'
+    temp = pd.DataFrame({
+        'dataset': [f'Dataset {i}'] * len(df_wide),
+        'x': df_wide[x_col],
+        'y': df_wide[y_col]
+    })
+    df_list.append(temp)
+
+df = pd.concat(df_list, ignore_index=True)
+
+print("Long-format data:")
+display(df.head())
+
+# -------------------------------
+# 4️⃣ Summary statistics
+# -------------------------------
+results = []
+for dataset_name, group in df.groupby('dataset'):
+    x = group['x']
+    y = group['y']
+    
+    mean_x = np.mean(x)
+    mean_y = np.mean(y)
+    var_x = np.var(x, ddof=1)
+    var_y = np.var(y, ddof=1)
+    std_x = np.std(x, ddof=1)
+    std_y = np.std(y, ddof=1)
+    cov_xy = np.cov(x, y)[0, 1]
+    corr = np.corrcoef(x, y)[0,1]
+    
+    slope, intercept, r_value, _, _ = stats.linregress(x, y)
+    r_squared = r_value**2
+    
+    results.append({
+        "Dataset": dataset_name,
+        "Mean X": round(mean_x,2),
+        "Mean Y": round(mean_y,2),
+        "Var X": round(var_x,2),
+        "Var Y": round(var_y,2),
+        "Std X": round(std_x,2),
+        "Std Y": round(std_y,2),
+        "Cov XY": round(cov_xy,2),
+        "Correlation": round(corr,2),
+        "Slope": round(slope,2),
+        "Intercept": round(intercept,2),
+        "R²": round(r_squared,2)
+    })
+
+summary = pd.DataFrame(results)
+print("\nSummary Statistics:")
+display(summary)
 
 ```
 
-# Summary Statistics Analysis
+    Long-format data:
 
-The calculated summary statistics for the four datasets are:
 
-| Dataset   | Mean X | Mean Y | Var X | Var Y | Correlation | Slope | Intercept | R² |
-|-----------|--------|--------|-------|-------|-------------|-------|-----------|----|
-| Dataset 1 | 9.0    | 7.50   | 11.0  | 4.13  | 0.82        | 0.50  | 3.00      | 0.67 |
-| Dataset 2 | 9.0    | 7.50   | 11.0  | 4.13  | 0.82        | 0.50  | 3.00      | 0.67 |
-| Dataset 3 | 9.0    | 7.50   | 11.0  | 4.13  | 0.82        | 0.50  | 3.00      | 0.67 |
-| Dataset 4 | 9.0    | 7.50   | 11.0  | 4.13  | 0.82        | 0.50  | 3.00      | 0.67 |
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>dataset</th>
+      <th>x</th>
+      <th>y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Dataset 1</td>
+      <td>10.0</td>
+      <td>8.04</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Dataset 1</td>
+      <td>8.0</td>
+      <td>6.95</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Dataset 1</td>
+      <td>13.0</td>
+      <td>7.58</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Dataset 1</td>
+      <td>9.0</td>
+      <td>8.81</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Dataset 1</td>
+      <td>11.0</td>
+      <td>8.33</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+    
+    Summary Statistics:
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Dataset</th>
+      <th>Mean X</th>
+      <th>Mean Y</th>
+      <th>Var X</th>
+      <th>Var Y</th>
+      <th>Std X</th>
+      <th>Std Y</th>
+      <th>Cov XY</th>
+      <th>Correlation</th>
+      <th>Slope</th>
+      <th>Intercept</th>
+      <th>R²</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Dataset 1</td>
+      <td>9.0</td>
+      <td>7.5</td>
+      <td>11.0</td>
+      <td>4.13</td>
+      <td>3.32</td>
+      <td>2.03</td>
+      <td>5.5</td>
+      <td>0.82</td>
+      <td>0.5</td>
+      <td>3.0</td>
+      <td>0.67</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Dataset 2</td>
+      <td>9.0</td>
+      <td>7.5</td>
+      <td>11.0</td>
+      <td>4.13</td>
+      <td>3.32</td>
+      <td>2.03</td>
+      <td>5.5</td>
+      <td>0.82</td>
+      <td>0.5</td>
+      <td>3.0</td>
+      <td>0.67</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Dataset 3</td>
+      <td>9.0</td>
+      <td>7.5</td>
+      <td>11.0</td>
+      <td>4.12</td>
+      <td>3.32</td>
+      <td>2.03</td>
+      <td>5.5</td>
+      <td>0.82</td>
+      <td>0.5</td>
+      <td>3.0</td>
+      <td>0.67</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Dataset 4</td>
+      <td>9.0</td>
+      <td>7.5</td>
+      <td>11.0</td>
+      <td>4.12</td>
+      <td>3.32</td>
+      <td>2.03</td>
+      <td>5.5</td>
+      <td>0.82</td>
+      <td>0.5</td>
+      <td>3.0</td>
+      <td>0.67</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+## Summary Statistics
+The following table summarizes each dataset’s key statistics:
+
+- Mean and variance of X and Y
+- Standard deviations
+- Covariance between X and Y
+- Pearson correlation
+- Regression slope and intercept
+- Coefficient of determination (R²)
+
+These metrics demonstrate why the four datasets look similar numerically but can behave very differently when visualized.
+
+## Scatter Plots with Regression Lines
+These scatter plots show the relationship between X and Y for each dataset along with the fitted ordinary least squares (OLS) regression line.
 
 **Observations:**
-- All datasets have nearly identical summary statistics.
-- Means and variances of X and Y are the same across all datasets.
-- Correlation coefficients and R² values are identical, suggesting similar linear relationships.
-- Despite this similarity, the underlying distributions and patterns differ significantly, as we will see in the visualizations.
+- Dataset 1: Clear linear relationship.
+- Dataset 2: Non-linear pattern not captured by the linear regression.
+- Dataset 3: A vertical outlier affects the regression line.
+- Dataset 4: A single leverage point dominates the regression.
 
 
 
 ```python
-# --- Compute statistics for each dataset ---
-datasets = {
-    'Dataset 1': ('x1','y1'),
-    'Dataset 2': ('x1','y2'),
-    'Dataset 3': ('x1','y3'),
-    'Dataset 4': ('x4','y4')
-}
-
-rows = []
-for name, (x_col, y_col) in datasets.items():
-    stats_dict = summarize(df[x_col], df[y_col])
-    rows.append({
-        'Dataset': name,
-        'Mean X': stats_dict['mean_x'],
-        'Mean Y': stats_dict['mean_y'],
-        'Var X': stats_dict['var_x'],
-        'Var Y': stats_dict['var_y'],
-        'Correlation': stats_dict['correlation'],
-        'Slope': stats_dict['slope'],
-        'Intercept': stats_dict['intercept'],
-        'R²': stats_dict['r_squared']
-    })
-
-summary_stats = pd.DataFrame(rows)
-
-print("=== Anscombe's Quartet Summary Statistics ===")
-print(summary_stats)
-
-# --- Visualization using Tufte Principles ---
-fig, axes = plt.subplots(2,2,figsize=(12,10))
+# -------------------------------
+# 5️⃣ Scatter plots + regression
+# -------------------------------
+fig, axes = plt.subplots(2, 2, figsize=(12,10))
 axes = axes.flatten()
 
-for i, (name, (x_col, y_col)) in enumerate(datasets.items()):
-    x = df[x_col]
-    y = df[y_col]
-    ax = axes[i]
+for i, (dataset_name, group) in enumerate(df.groupby('dataset')):
+    x = group['x']
+    y = group['y']
+    
     # Scatter plot
-    ax.scatter(x, y, color='blue', s=50, edgecolor='k')
+    axes[i].scatter(x, y, color='blue', s=50, edgecolor='k')
+    
     # Regression line
-    slope, intercept, _, _, _ = stats.linregress(x, y)
-    ax.plot(x, intercept + slope*x, color='red', lw=2)
+    slope, intercept, r_value, _, _ = stats.linregress(x, y)
+    y_pred = slope * x + intercept
+    axes[i].plot(x, y_pred, color='red', linestyle='--', linewidth=2)
+    
     # Titles and labels
-    ax.set_title(name)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    # Remove top/right spines for clean look
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    axes[i].set_title(f"{dataset_name}", fontsize=14)
+    axes[i].set_xlabel("X", fontsize=12)
+    axes[i].set_ylabel("Y", fontsize=12)
+    
+    # Remove top/right spines
+    axes[i].spines['top'].set_visible(False)
+    axes[i].spines['right'].set_visible(False)
+    
+    axes[i].grid(True, linestyle=':', linewidth=0.5, alpha=0.7)
 
-plt.suptitle("Anscombe's Quartet: Visualization with Regression Lines", fontsize=16)
-plt.tight_layout(rect=[0,0.03,1,0.95])
+plt.tight_layout()
 plt.show()
+```
+
+
+    
+![png](/assets/eda/output_6_0.png)
+    
+
+
+## Residual Plots
+Residual plots show the difference between the observed Y values and those predicted by the regression line.  
+- Large residuals indicate points poorly explained by the linear model.
+- Dataset 2 shows a curved pattern in residuals, confirming non-linearity.
+- Dataset 3’s vertical outlier has a large residual.
+- Dataset 4’s leverage point has a small residual but heavily influences the regression.
+
+
+```python
+# -------------------------------
+# 6️⃣ Residual plots
+# -------------------------------
+for dataset_name, group in df.groupby('dataset'):
+    x = group['x']
+    y = group['y']
+    slope, intercept, _, _, _ = stats.linregress(x, y)
+    y_pred = slope*x + intercept
+    resid = y - y_pred
+    
+    plt.figure(figsize=(6,4))
+    plt.scatter(x, resid, color='purple', s=50, edgecolor='k')
+    plt.axhline(0, color='black', linestyle='--', linewidth=1)
+    plt.title(f"{dataset_name} Residuals vs X")
+    plt.xlabel("X")
+    plt.ylabel("Residuals")
+    plt.grid(True, linestyle=':', linewidth=0.5, alpha=0.7)
+    plt.show()
+```
+
+
+    
+![png](/assets/eda/output_8_0.png)
+    
+
+
+
+    
+![png](/assets/eda/output_8_1.png)
+    
+
+
+
+    
+![png](/assets/eda/output_8_2.png)
+    
+
+
+
+    
+![png](/assets/eda/output_8_3.png)
+    
+
+
+## Distribution Comparisons
+Boxplots and violin plots of X and Y values per dataset show differences in spread and identify outliers.
+
+- Boxplots display median, quartiles, and potential outliers.
+- Violin plots (if added) visualize the full distribution shape.
+
+
+```python
+# -------------------------------
+# 7️⃣ Boxplots and violin plots
+# -------------------------------
+plt.figure(figsize=(12,5))
+plt.subplot(1,2,1)
+sns.boxplot(x='dataset', y='x', data=df)
+plt.title("Boxplot of X per dataset")
+
+plt.subplot(1,2,2)
+sns.boxplot(x='dataset', y='y', data=df)
+plt.title("Boxplot of Y per dataset")
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(12,5))
+plt.subplot(1,2,1)
+sns.violinplot(x='dataset', y='x', data=df)
+plt.title("Violin plot of X per dataset")
+
+plt.subplot(1,2,2)
+sns.violinplot(x='dataset', y='y', data=df)
+plt.title("Violin plot of Y per dataset")
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](/assets/eda/output_10_0.png)
+    
+
+
+
+    
+![png](/assets/eda/output_10_1.png)
+    
+
+
+## Faceted Scatter Plots
+This combined plot displays all four datasets side by side for comparison. It highlights how similar summary statistics can correspond to very different distributions.
+
+
+```python
+#-------------------------------
+# 8️⃣ Faceted comparison (scatter + regression)
+# -------------------------------
+sns.lmplot(data=df, x='x', y='y', col='dataset', col_wrap=2,
+           height=4, aspect=1, scatter_kws={'s':50}, line_kws={'ls':'--'})
+plt.subplots_adjust(top=0.9)
+plt.suptitle("Anscombe's Quartet - Faceted Scatterplots with Regression Lines", fontsize=16)
+plt.show()
+```
+
+
+    
+![png](/assets/eda/output_12_0.png)
+    
+
+
+## Interactive Visualizations
+Interactive scatter plots allow zooming, hovering, and dataset selection.  
+- Plotly scatter plot: interactive faceted view.
+- Altair plot: overlaid dataset comparison.
+These visualizations enhance exploratory analysis beyond static plots.
+
+
+```python
+import plotly.express as px
+
+# Interactive scatter plot with facets per dataset
+fig = px.scatter(
+    df,  # long-format dataframe
+    x='x',
+    y='y',
+    color='dataset',
+    facet_col='dataset',  # creates one plot per dataset
+    title="Interactive Anscombe Scatter Plots",
+    labels={'x': 'X', 'y': 'Y', 'dataset': 'Dataset'},
+    height=600,
+    width=900
+)
+
+fig.update_traces(marker=dict(size=10, line=dict(width=1, color='DarkSlateGrey')))
+fig.update_layout(title_x=0.5)  # center title
+
+# Show in notebook
+fig.show()
+
+# Optional: save as HTML to include in GitHub/portfolio
+fig.write_html("output/anscombe_plotly.html")
 
 ```
 
-    === Anscombe's Quartet Summary Statistics ===
-         Dataset  Mean X    Mean Y  Var X     Var Y  Correlation     Slope  \
-    0  Dataset 1     9.0  7.500909   11.0  4.127269     0.816421  0.500091   
-    1  Dataset 2     9.0  7.500909   11.0  4.127629     0.816237  0.500000   
-    2  Dataset 3     9.0  7.500000   11.0  4.122620     0.816287  0.499727   
-    3  Dataset 4     9.0  7.500909   11.0  4.123249     0.816521  0.499909   
-    
-       Intercept        R²  
-    0   3.000091  0.666542  
-    1   3.000909  0.666242  
-    2   3.002455  0.666324  
-    3   3.001727  0.666707  
-
-
 
     
-![png](/assets/output_3_1.png)
-    
+<iframe src="/assets/eda/anscombe_plotly.html" width="100%" height="600" frameborder="0"></iframe>
 
 
-# Visualization Insights
 
-The scatter plots with regression lines reveal important differences that are **not captured by summary statistics**:
 
-- **Dataset 1:** Shows a fairly linear relationship; the regression line fits the data well.
-- **Dataset 2:** Displays a clear curve, so a linear model is not perfect even though R² is identical.
-- **Dataset 3:** Contains an outlier that dramatically affects the slope of the regression line.
-- **Dataset 4:** Has almost all points with the same X value except one outlier, causing the regression to appear similar statistically but misleading visually.
+## Conclusion & Future Work
+Despite nearly identical summary statistics, the four datasets show very different behaviors when visualized. This demonstrates why EDA should combine numeric summaries and visual inspection.
 
-**Application of Tufte’s Principles:**
-- Clean axes and minimal spines remove visual clutter.
-- Small multiples allow easy comparison across datasets.
-- No unnecessary colors, 3D effects, or embellishments (maximizing data-to-ink ratio).
-- Titles, axis labels, and regression lines are clear and readable.
-
-**Conclusion:**  
-Even when summary statistics are identical, visualization is essential to detect non-linear patterns, outliers, or misleading trends. These plots demonstrate why exploratory data analysis should combine both **statistics and visualization**.
-
-# Reflection
-
-Through this assignment, I learned:
-
-- **Statistics alone can be misleading:** Datasets can share mean, variance, correlation, and R² yet look very different.
-- **Visualization reveals hidden patterns:** Scatter plots show curvature, clustering, and outliers that numeric summaries hide.
-- **Importance of good visualization design:** Applying Tufte’s principles improved clarity and made comparisons easier.
-- **Resourcefulness:** I used online documentation, generative AI, and example code to calculate regression, correlation, and variance.
-- **Peer teaching:** Explaining the difference between R² and visual fit helped me understand why statistics without context can be deceptive.
-
-Overall, this exercise reinforced that **exploratory data analysis should always combine numbers and visuals** to ensure accurate interpretations.
+**Future directions / ideas:**
+- Apply robust regression methods to reduce influence of outliers.
+- Compute Cook's distance or leverage points to detect influential observations.
+- Use bootstrapping for slope/intercept confidence intervals.
+- Publish interactive dashboards using Plotly or Altair.
